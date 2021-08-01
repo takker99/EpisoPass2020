@@ -57,6 +57,7 @@ const crypt_char = function (
 export const crypt = (seed: string, secret_string: string) => {
   // ハッシュ値ぽいときHex文字だけ使うことにする。ちょっと心配だが...
   // Hex文字が32文字以上で、数字と英字が入ってればまぁハッシュ値と思って良いのではないか...
+  // TODO:変換方法を外部から指定できるようにする？
   const useHex = seed.match(/[0-9a-f]{32}/) && seed.match(/[a-f]/) &&
     seed.match(/[0-9]/);
 
@@ -70,5 +71,5 @@ export const crypt = (seed: string, secret_string: string) => {
     const s = hashString.substring(j * 4, (j * 4) + 4);
     const n = parseInt(s, 16);
     return crypt_char(seed[i], n + i, useHex ? hexcharset : origcharset);
-  });
+  }).join("");
 };
