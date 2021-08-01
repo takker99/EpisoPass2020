@@ -34,7 +34,7 @@ export const editor = (data: EpisoData) => {
     // q番目の質問のa番目の選択肢をクリックしたとき呼ばれる関数
     () => {
       answer[q] = a;
-      __range__(0, qas[q]["answers"].length, false).forEach(function (i) {
+      __range__(0, qas[q].answers.length, false).forEach(function (i) {
         $(`#answer${q}-${i}`).css(
           "background-color",
           i === a ? "#555" : "#fff",

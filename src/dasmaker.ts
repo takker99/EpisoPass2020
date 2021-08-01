@@ -12,19 +12,19 @@ import type { EpisoData } from "./types.ts";
 import { make_html, show } from "./lib.ts";
 
 export const dasmaker = (data: EpisoData, selections: number[]) => {
-  var mousedown = false;
+  let mousedown = false;
   var curdiv: JQuery<any> | null = null; // 現在選択中のdiv (letじゃ駄目)
 
   const selected: number[] = [];
   let finished = false; // finish() が二度呼ばれるのを防止
 
-  var browserWidth = function () {
+  let browserWidth = function () {
     if (window.innerWidth) return window.innerWidth;
     else if (document.body) return document.body.clientWidth;
     return 0;
   };
 
-  var browserHeight = function () {
+  let browserHeight = function () {
     if (window.innerHeight) return window.innerHeight;
     else if (document.body) return document.body.clientHeight;
     return 0;

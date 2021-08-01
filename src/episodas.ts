@@ -1,43 +1,50 @@
+/// <reference no-default-lib="true"/>
+/// <reference lib="dom" />
+/// <reference lib="deno.ns" />
+/// <reference lib="esnext" />
 import { noise } from "./noiseGif.ts";
 import $ from "https://esm.sh/jquery@3.6.0";
 import type { EpisoData } from "./types.ts";
+import { make_html } from "./lib.ts";
+import { crypt } from "./crypt.ts";
 
 export const episodas = (data: EpisoData) => {
-  var mousedown = false;
-  var curdiv = null; // letじゃ駄目
-  var buttons = [];
+  let mousedown = false;
+  var curdiv: JQuery | null = null; // letじゃ駄目
+  const buttons: { x?: number; y?: number; w?: number; h?: number }[] = [];
+  const selected: number[] = [];
+  const qas = data.qas;
 
-  let browserWidth = () => {
+  const browserWidth = () => {
     if (window.innerWidth) return window.innerWidth;
     else if (document.body) return document.body.clientWidth;
     return 0;
   };
 
-  var browserHeight = function () {
+  const browserHeight = function () {
     if (window.innerHeight) return window.innerHeight;
     else if (document.body) return document.body.clientHeight;
     return 0;
   };
 
-  var showQA = function () { // n番目の問題と答リストを設定
-    let len = selected.length;
+  const showQA = function () { // n番目の問題と答リストを設定
+    const len = selected.length;
     if (len < qas.length) {
-      let question = qas[len].question;
+      const question = qas[len].question;
       $("#question").text(question);
-      let answers = qas[len].answers;
-      for (var i = 0; i < answers.length; i++) {
+      const answers = qas[len].answers;
+      for (let i = 0; i < answers.length; i++) {
         $("#id" + i).text(answers[i]);
       }
-    }
-
-    for (var i = 0; i < answers.length; i++) {
-      div = $("#id" + i);
-      let o = {};
-      o.x = div.offset().left;
-      o.y = div.offset().top;
-      o.w = div.width();
-      o.h = div.height();
-      buttons[i] = o;
+      for (let i = 0; i < answers.length; i++) {
+        const div = $("#id" + i);
+        buttons[i] = {
+          x: div.offset()?.left,
+          y: div.offset()?.top,
+          w: div.width(),
+          h: div.height(),
+        };
+      }
     }
   };
 
@@ -46,37 +53,37 @@ export const episodas = (data: EpisoData) => {
     // (EpisoBoxの仕様だが不要かも)
     if (location.href.match(/\.box\.html$/)) {
       location.href = "https://scrapbox.io/" +
-        crypt.crypt(data.seed, secretstr());
+        crypt(data.seed, secretstr());
       return;
     }
     if (location.href.match(/EpisoPassCall/)) {
       location.href = "/EpisoPassResult?" +
-        escape(crypt.crypt(data.seed, secretstr()));
+        escape(crypt(data.seed, secretstr()));
       return;
     }
     $("#das").children().remove();
 
     if (typeof (editor) != "undefined") { // 編集画面のときだけHTMLデータ取得ボタン処理
-      lib.lib.make_html(data);
+      make_html(data);
     }
 
-    var newpass = crypt.crypt(data.seed, secretstr());
-    var m = location.href.match(/([a-zA-Z\-]+)_invitation\.html/);
+    var newpass = crypt(data.seed, secretstr());
+    const m = location.href.match(/([a-zA-Z\-]+)_invitation\.html/);
     if (m) {
-      var invitationlink = `https://scrapbox.io/projects/${
+      const invitationlink = `https://scrapbox.io/projects/${
         m[1]
       }/invitations/${newpass}`;
       location.href = invitationlink;
     }
 
-    var center = $("<center>");
+    const center = $("<center>");
     $("#das").append(center);
 
     center.append($("<p>"));
 
     // 生成されたパスワードを表示
     // 値をコピーできるようにするため<input>を利用
-    var passspan = $("<input>");
+    const passspan = $("<input>");
     passspan.val(newpass);
     passspan.attr("type", "text");
     passspan.attr("id", "passspan");
@@ -92,7 +99,7 @@ export const episodas = (data: EpisoData) => {
 
     center.append($("<p>"));
 
-    var show = $("<input>");
+    const show = $("<input>");
     show.attr("type", "button");
     show.attr("value", "表示");
     show.css("font-size", width * 0.05);
@@ -110,7 +117,7 @@ export const episodas = (data: EpisoData) => {
     });
     center.append(show);
 
-    var again = $("<input>");
+    const again = $("<input>");
     again.attr("type", "button");
     again.attr("value", "再実行");
     again.css("font-size", width * 0.05);
@@ -130,7 +137,7 @@ export const episodas = (data: EpisoData) => {
     passspan.select();
     document.execCommand("copy");
 
-    if (typeof (editor) == "undefined") { // 利用画面
+    if (editor !== undefined) { // 利用画面
       passspan.hide();
       show.show();
       again.hide();
@@ -142,21 +149,17 @@ export const episodas = (data: EpisoData) => {
     }
   }
 
-  secretstr = function () {
-    var j, ref, results;
-    return (function () {
-      results = [];
-      for (
-        var j = 0, ref = qas.length;
-        0 <= ref ? j < ref : j > ref;
-        0 <= ref ? j++ : j--
-      ) {
-        results.push(j);
-      }
-      return results;
-    }).apply(this).map(function (i) {
-      return qas[i].question + qas[i]["answers"][selected[i]];
-    }).join("");
+  const secretstr = () => {
+    const results = [];
+    for (
+      let j = 0, ref = qas.length;
+      0 <= ref ? j < ref : j > ref;
+      0 <= ref ? j++ : j--
+    ) {
+      results.push(j);
+    }
+    return results.map((i) => qas[i].question + qas[i].answers[selected[i]])
+      .join("");
   };
 
   function initsize() {
