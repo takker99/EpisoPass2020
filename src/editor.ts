@@ -59,7 +59,7 @@ export const editor = (data: EpisoData) => {
   const hover_out_func = () => () => clearTimeout(timeout);
 
   // f4ba35ab6069e8bcf9ef62bf73d12fd1.png のような表示
-  const answerspan =  (q: number, a: number)=> { // q番目の質問のa番目の選択肢のspan
+  const answerspan = (q: number, a: number) => { // q番目の質問のa番目の選択肢のspan
     const aspan = $('<span class="answer">');
     const input = $('<input type="text" autocomplete="off" class="answer">')
       .val(qas[q].answers[a])
@@ -72,7 +72,7 @@ export const editor = (data: EpisoData) => {
     return aspan.append(input);
   };
 
-  const showimage =  (str: string, img: JQuery<any>)=> {
+  const showimage = (str: string, img: JQuery<any>) => {
     if (str.match(/\.(png|jpeg|jpg|gif)$/i)) {
       return img.attr("src", str)
         .css("display", "block");
@@ -106,7 +106,7 @@ export const editor = (data: EpisoData) => {
       return $(`#delim${q}`).before(answerspan(q, nelements));
     };
 
-  const qadiv =  (q: number) =>{ // q番目の質問+選択肢のdiv
+  const qadiv = (q: number) => { // q番目の質問+選択肢のdiv
     answer[q] = 0;
     const div = $("<div class='qadiv'>") // !!!!!!!clssが変
       .attr("id", `qadiv${q}`);
@@ -144,7 +144,7 @@ export const editor = (data: EpisoData) => {
       .append($('<br clear="all">'));
   };
 
-  const maindiv =  () =>{
+  const maindiv = () => {
     $("#main").children().remove(); // ブラウザから「別名で保存」すると #main に入れたデータが全部格納されてしまうので、最初に全部消しておく
 
     for (let i = 0; i < qas.length; i++) {
@@ -154,7 +154,7 @@ export const editor = (data: EpisoData) => {
     const minus = $(
       '<input type="button" value=" 問題削除 " id="qa_minus" class="qabutton">',
     )
-      .click( () =>{ // 質問の数を減らす「-」ボタンをクリックしたとき呼ばれる関数
+      .click(() => { // 質問の数を減らす「-」ボタンをクリックしたとき呼ばれる関数
         qas.pop();
         $(`#qadiv${qas.length}`).remove();
         return calcpass();
@@ -164,7 +164,7 @@ export const editor = (data: EpisoData) => {
     $("#main").append($("<span>  </span>"));
 
     const plus = $('<input type="button" value=" 問題追加 " class="qabutton">')
-      .click(()=> { // 質問の数を増やす「-」ボタンをクリックしたとき呼ばれる関数
+      .click(() => { // 質問の数を増やす「-」ボタンをクリックしたとき呼ばれる関数
         qas.push({
           question: "新しい質問",
           answers: ["回答11", "回答22", "回答33"],
@@ -190,16 +190,17 @@ export const editor = (data: EpisoData) => {
     return data["seed"] = newseed;
   };
 
-  const sendfile = (files) => {
+  const sendfile = (files: FileList) => {
     const file = files[0];
     const fileReader = new FileReader();
-    fileReader.onload =  (event)=> {
-      const s = event.target.result; // 読んだファイルの内容
+    fileReader.onload = (event) => {
+      const s = event.target?.result; // 読んだファイルの内容
+      if (typeof s !== "string") throw Error("file must be a text format");
       if (s[0] === "{") {
         data = JSON.parse(s);
       } else {
         const lines = s.split(/\n/);
-        lines.forEach((line) =>{
+        lines.forEach((line) => {
           const m = line.match(/^\s*const data = (.*)$/);
           if (m) {
             const json = m[1].replace(/;.*$/, "");
@@ -218,7 +219,7 @@ export const editor = (data: EpisoData) => {
     return false;
   };
 
-  const init =  () =>{
+  const init = () => {
     show("#editor");
     make_html(data);
 
@@ -246,11 +247,9 @@ export const editor = (data: EpisoData) => {
     $("body")
       .bind("dragover", () => false).bind("dragend", () => false).bind(
         "drop",
-         (e) =>{
+        (e) => {
           e.preventDefault(); // デフォルトは「ファイルを開く」
-          const {
-            files,
-          } = e.originalEvent.dataTransfer;
+          const { files } = e.originalEvent?.dataTransfer!;
           sendfile(files);
           return files;
         },
