@@ -7,7 +7,7 @@ import $ from "https://esm.sh/jquery@3.6.0";
 import type { EpisoData } from "./types.ts";
 import { make_html } from "./lib.ts";
 import { crypt } from "./crypt.ts";
-import {editor}from "./editor.ts"
+import { editor } from "./editor.ts";
 
 export const episodas = (data: EpisoData) => {
   let mousedown = false;
