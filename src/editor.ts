@@ -16,7 +16,6 @@ import type { EpisoData } from "./types.ts";
 import { make_html, show } from "./lib.ts";
 import { dasmaker } from "./dasmaker.ts";
 import { easy } from "./easy.ts";
-import { __range__ } from "./utils.ts";
 
 export const editor = (data: EpisoData) => {
   const {
@@ -34,13 +33,13 @@ export const editor = (data: EpisoData) => {
     // q番目の質問のa番目の選択肢をクリックしたとき呼ばれる関数
     () => {
       answer[q] = a;
-      __range__(0, qas[q].answers.length, false).forEach(function (i) {
+      for (let i = 0; i < qas[q].answers.length; i++) {
         $(`#answer${q}-${i}`).css(
           "background-color",
           i === a ? "#555" : "#fff",
         );
-        return $(`#answer${q}-${i}`).css("color", i === a ? "#fff" : "#555");
-      });
+        $(`#answer${q}-${i}`).css("color", i === a ? "#fff" : "#555");
+      }
       return calcpass();
     };
 
@@ -125,9 +124,9 @@ export const editor = (data: EpisoData) => {
     showimage(qstr, img);
 
     const ansdiv = $("<div class='ansdiv'>");
-    __range__(0, qas[q]["answers"].length, false).forEach((i) =>
-      ansdiv.append(answerspan(q, i))
-    );
+    for (let i = 0; i < qas[q].answers.length; i++) {
+      ansdiv.append(answerspan(q, i));
+    }
     const delim = $("<span>  </span>")
       .attr("id", `delim${q}`);
     ansdiv.append(delim);
@@ -147,7 +146,9 @@ export const editor = (data: EpisoData) => {
   const maindiv = function () {
     $("#main").children().remove(); // ブラウザから「別名で保存」すると #main に入れたデータが全部格納されてしまうので、最初に全部消しておく
 
-    __range__(0, qas.length, false).forEach((i) => $("#main").append(qadiv(i)));
+    for (let i = 0; i < qas.length; i++) {
+      $("#main").append(qadiv(i));
+    }
 
     const minus = $(
       '<input type="button" value=" 問題削除 " id="qa_minus" class="qabutton">',
@@ -175,10 +176,7 @@ export const editor = (data: EpisoData) => {
 
   const secretstr = () =>
     // 質問文字列と選択された文字列をすべて接続した文字列
-    __range__(0, qas.length, false).map((i) =>
-      qas[i]["question"] + qas[i]["answers"][answer[i]]
-    )
-      .join("");
+    qas.map((qa, i) => qa.question + qa.answers[answer[i]]).join("");
 
   const calcpass = () => { // シード文字列からパスワード文字列を生成
     const newpass = crypt.crypt($("#seed").val(), secretstr());
