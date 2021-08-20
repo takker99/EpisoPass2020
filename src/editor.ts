@@ -16,6 +16,7 @@ import type { EpisoData } from "./types.ts";
 import { make_html, show } from "./lib.ts";
 import { dasmaker } from "./dasmaker.ts";
 import { easy } from "./easy.ts";
+import {crypt}from "./crypt.ts"
 
 export const editor = (data: EpisoData) => {
   const {
@@ -179,12 +180,12 @@ export const editor = (data: EpisoData) => {
     qas.map((qa, i) => qa.question + qa.answers[answer[i]]).join("");
 
   const calcpass = () => { // シード文字列からパスワード文字列を生成
-    const newpass = crypt.crypt($("#seed").val(), secretstr());
+    const newpass = crypt($("#seed").val() as string, secretstr());
     return $("#pass").val(newpass);
   };
 
   const calcseed = function () { // パスワード文字列からシード文字列を生成
-    const newseed = crypt.crypt($("#pass").val(), secretstr());
+    const newseed = crypt($("#pass").val() as string, secretstr());
     $("#seed").val(newseed);
     return data["seed"] = newseed;
   };
