@@ -13,7 +13,6 @@
 /// <reference lib="esnext" />
 /// <reference lib="dom" />
 import { createHash } from "https://deno.land/std@0.103.0/hash/mod.ts";
-import { __range__ } from "./utils.ts";
 
 //  文字種ごとに置換を行なうためのテーブル
 const origcharset = [
@@ -30,25 +29,25 @@ const hexcharset = [
   "0123456789abcdef",
 ];
 
-const charkind = (c: string, charset: string[]) => {
-  return __range__(0, charset.length, false).findIndex((i) =>
-    charset[i].indexOf(c) >= 0
-  );
-};
+function selectCharTable(c: string, charset: string[]) {
+  return charset.find((char) => char.includes(c)) ?? "";
+}
 
-// crypt_char(crypt_char(c,n),n) == c になるような文字置換関数
-const crypt_char = function (
+/* crypt_char(crypt_char(c,n),n) == c になるような文字置換関数
+ *
+ * @param c 変換対象の文字列
+ *
+ */
+function crypt_char(
   c: string,
   n: number,
   charset: string[] = origcharset,
 ) {
-  const kind = charkind(c, charset);
-  const chars = charset[kind];
+  const chars = selectCharTable(c, charset); // 変換候補の文字のリスト
   const cind = chars.indexOf(c);
-  const len = chars.length;
-  const ind = ((n - cind) + len) % len;
+  const ind = ((n - cind) + chars.length) % chars.length;
   return chars[ind];
-};
+}
 
 //
 // secret_stringとcharset[]にもとづいてseedを暗号的に変換する
@@ -66,7 +65,7 @@ export const crypt = (seed: string, secret_string: string) => {
   const hash = createHash("md5");
   hash.update(secret_string);
   const hashString = hash.toString();
-  return __range__(0, seed.length, false).map((i) => {
+  return [...Array(seed.length).keys()].map((i) => {
     const j = i % 8;
     const s = hashString.substring(j * 4, (j * 4) + 4);
     const n = parseInt(s, 16);
